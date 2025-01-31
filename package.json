@@ -1,0 +1,25 @@
+{
+  "name": "kiln-monorepo",
+  "version": "0.0.0",
+  "private": true,
+  "packageManager": "npm@10.2.4",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev --parallel",
+    "lint": "turbo run lint",
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "postinstall": "turbo run build --filter=@kiln-monorepo/shared"
+  },
+  "devDependencies": {
+    "eslint": "^8.48.0",
+    "prettier": "^3.0.3",
+    "turbo": "latest"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
