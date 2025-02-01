@@ -1,0 +1,51 @@
+html {
+    scroll-behavior: smooth;
+    overflow-y: auto;
+    /* Désactive le scroll automatique */
+    scroll-behavior: auto;
+    /* Empêche le scroll lors du focus sur les éléments */
+    scroll-padding: 0;
+}
+
+/* Reset tous les comportements de scroll automatique */
+* {
+    scroll-behavior: auto !important;
+}
+
+/* Désactive complètement le scroll automatique sur focus */
+*:focus {
+    scroll-behavior: auto !important;
+    scroll-padding: 0 !important;
+    scroll-margin: 0 !important;
+}
+
+/* Classe spécifique pour les boutons qui ne doivent pas déclencher de scroll */
+.prevent-scroll {
+    scroll-margin: 0;
+    scroll-behavior: none;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Empêche le scroll sur le body lors des clics */
+body {
+    overflow-anchor: none;
+}
+
+/* Style spécifique pour les boutons */
+button {
+    /* Empêche le focus de déclencher un scroll */
+    scroll-margin-top: 0 !important;
+    /* Désactive l'outline par défaut du focus */
+    outline: none !important;
+}
+
+/* Pour les conteneurs qui doivent scroller */
+.scrollable {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.allow-scroll {
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+} 

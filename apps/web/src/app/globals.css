@@ -1,3 +1,155 @@
 @tailwind base;
 @tailwind components;
-@tailwind utilities; 
+@tailwind utilities;
+
+body {
+  @apply transition-colors duration-200;
+}
+
+main {
+  @apply transition-colors duration-200;
+}
+
+/* Dark Mode Styles */
+body.dark {
+  background-color: rgb(17, 24, 39); /* bg-gray-900 */
+  color: rgb(243, 244, 246); /* text-gray-100 */
+}
+
+body.dark main {
+  background-color: rgb(17, 24, 39) !important; /* bg-gray-900 */
+}
+
+/* Backgrounds */
+body.dark .bg-white {
+  background-color: rgb(31, 41, 55) !important; /* bg-gray-800 */
+}
+
+body.dark .bg-gray-50 {
+  background-color: rgb(31, 41, 55) !important; /* bg-gray-800 */
+}
+
+body.dark .bg-gray-100 {
+  background-color: rgb(55, 65, 81) !important; /* bg-gray-700 */
+}
+
+/* Cards and Panels */
+body.dark .bg-white, 
+body.dark [class*="bg-white"] {
+  background-color: rgb(31, 41, 55) !important; /* bg-gray-800 */
+}
+
+/* Network Cards */
+body.dark div[class*="bg-white"] {
+  background-color: rgb(31, 41, 55) !important; /* bg-gray-800 */
+}
+
+/* Inputs */
+body.dark input[type="text"],
+body.dark input[type="search"] {
+  background-color: rgb(55, 65, 81) !important; /* bg-gray-700 */
+  color: rgb(243, 244, 246) !important; /* text-gray-100 */
+}
+
+/* Buttons */
+body.dark button[class*="bg-gray-50"],
+body.dark button[class*="bg-gray-100"] {
+  background-color: rgb(55, 65, 81) !important; /* bg-gray-700 */
+}
+
+/* Chat Messages */
+body.dark .bg-gray-100 {
+  background-color: rgb(55, 65, 81) !important; /* bg-gray-700 */
+}
+
+/* Wallet Details */
+body.dark .bg-gray-50 {
+  background-color: rgb(55, 65, 81) !important; /* bg-gray-700 */
+}
+
+/* Text Colors */
+body.dark .text-gray-900 {
+  color: rgb(255, 255, 255); /* text-white */
+}
+
+body.dark .text-gray-800 {
+  color: rgb(243, 244, 246); /* text-gray-100 */
+}
+
+body.dark .text-gray-700 {
+  color: rgb(229, 231, 235); /* text-gray-200 */
+}
+
+body.dark .text-gray-600 {
+  color: rgb(209, 213, 219); /* text-gray-300 */
+}
+
+/* Borders */
+body.dark .border-gray-200 {
+  border-color: rgb(55, 65, 81); /* border-gray-700 */
+}
+
+body.dark .border-gray-300 {
+  border-color: rgb(75, 85, 99); /* border-gray-600 */
+}
+
+/* Interactive Elements */
+body.dark input[type="text"] {
+  background-color: rgb(31, 41, 55); /* bg-gray-800 */
+  border-color: rgb(55, 65, 81); /* border-gray-700 */
+  color: rgb(243, 244, 246); /* text-gray-100 */
+}
+
+body.dark input[type="text"]::placeholder {
+  color: rgb(156, 163, 175); /* text-gray-400 */
+}
+
+/* Buttons */
+body.dark button.bg-gray-50 {
+  background-color: rgb(31, 41, 55); /* bg-gray-800 */
+  color: rgb(209, 213, 219); /* text-gray-300 */
+  border-color: rgb(55, 65, 81); /* border-gray-700 */
+}
+
+body.dark button.bg-gray-50:hover {
+  background-color: rgb(55, 65, 81); /* bg-gray-700 */
+}
+
+/* Active States */
+body.dark button.bg-blue-100 {
+  background-color: rgb(30, 58, 138); /* bg-blue-900 */
+  color: rgb(219, 234, 254); /* text-blue-100 */
+  border-color: rgb(30, 64, 175); /* border-blue-800 */
+}
+
+body.dark button.bg-yellow-100 {
+  background-color: rgb(120, 53, 15); /* bg-yellow-900 */
+  color: rgb(254, 243, 199); /* text-yellow-100 */
+  border-color: rgb(146, 64, 14); /* border-yellow-800 */
+}
+
+/* Icons */
+body.dark svg[stroke="currentColor"] {
+  color: rgb(156, 163, 175); /* text-gray-400 */
+}
+
+/* Hover states */
+body.dark .hover\:bg-gray-100:hover {
+  @apply hover:bg-gray-700;
+}
+
+body.dark .hover\:bg-gray-200:hover {
+  @apply hover:bg-gray-600;
+}
+
+/* Input and focus */
+body.dark .focus\:ring-blue-500:focus {
+  @apply focus:ring-blue-400;
+}
+
+/* Button icons */
+body.dark .text-gray-400 {
+  @apply text-gray-500;
+}
+
+/* Gradient buttons remain unchanged as they already have good contrast */ 

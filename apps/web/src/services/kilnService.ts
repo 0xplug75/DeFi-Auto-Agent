@@ -76,6 +76,7 @@ export const kilnService = {
     return response.json();
   },
 
+
   async getAllNetworksStats(): Promise<Map<string, NetworkStats>> {
     const networks = this.getSupportedNetworks();
     const statsMap = new Map<string, NetworkStats>();

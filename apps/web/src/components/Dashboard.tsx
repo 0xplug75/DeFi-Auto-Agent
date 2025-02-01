@@ -156,110 +156,12 @@ const AnalysisRenderer = ({ content }: { content: string }) => {
   );
 };
 
-// Ajoutez d'abord le composant ChatBox
-const ChatBox = () => {
-  const [messages, setMessages] = useState<Array<{text: string, isUser: boolean}>>([
-    {
-      text: "Hello! I'm your DeFi assistant. How can I help you optimize your portfolio today?",
-      isUser: false
-    }
-  ]);
-  const [input, setInput] = useState('');
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!input.trim()) return;
-
-    // Ajouter le message de l'utilisateur
-    setMessages(prev => [...prev, {text: input, isUser: true}]);
-    const userMessage = input;
-    setInput('');
-
-    try {
-      const response = await fetch('/api/magic-analysis', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          text: 'Your an IA Agent for DEFI, answer the user question with a little summary of the question : ' + userMessage
-        })
-      });
-      const data = await response.json();
-      
-      // Ajouter la réponse de l'assistant
-      setMessages(prev => [...prev, {
-        text: data.candidates[0].content.parts[0].text,
-        isUser: false
-      }]);
-    } catch (error) {
-      console.error('Error getting response:', error);
-      setMessages(prev => [...prev, {
-        text: "Sorry, I encountered an error. Please try again.",
-        isUser: false
-      }]);
-    }
-  };
-
-  return (
-    <div className="flex flex-col h-[400px] bg-white rounded-lg shadow-lg overflow-hidden">
-      <div className="p-4 border-b border-gray-200 bg-gradient-to-r from-blue-600 to-purple-600">
-        <div className="flex flex-col">
-          <h2 className="text-lg font-medium text-white flex items-center gap-2">
-            <span className="text-xl">🤖</span>
-            DeFi AI Agent Chat
-          </h2>
-          <span className="text-xs text-blue-100 mt-1">powered by ElizaOS</span>
-        </div>
-      </div>
-      
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {messages.map((message, index) => (
-          <div
-            key={index}
-            className={`flex ${message.isUser ? 'justify-end' : 'justify-start'}`}
-          >
-            <div
-              className={`max-w-[80%] rounded-lg px-4 py-2 ${
-                message.isUser
-                  ? 'bg-blue-500 text-white'
-                  : 'bg-gray-100 text-gray-800'
-              }`}
-            >
-              {message.text}
-            </div>
-          </div>
-        ))}
-        <div ref={messagesEndRef} />
-      </div>
-
-      <form onSubmit={handleSubmit} className="p-4 border-t border-gray-200">
-        <div className="flex gap-2">
-          <input
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Ask ElizaOS about your DeFi strategy..."
-            className="flex-1 px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          <button
-            type="submit"
-            className="px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg hover:from-blue-600 hover:to-purple-600 transition-all duration-200"
-          >
-            Send
-          </button>
-        </div>
-      </form>
-    </div>
+// Add a function to format markdown text
+const formatMarkdown = (text: string) => {
+  // Format bold text (**text**)
+  return text.replace(
+    /\*\*([^*]+)\*\*/g, 
+    '<strong class="font-bold">$1</strong>'
   );
 };
 
@@ -283,15 +185,149 @@ export default function Dashboard() {
     return {};
   });
   const [selectedNetwork, setSelectedNetwork] = useState<NetworkInfo | null>(null);
-  const [isAnalysisLoading, setIsAnalysisLoading] = useState(false);
-  const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
   const [sidePanelOpen, setSidePanelOpen] = useState(false);
   const [walletsStakes, setWalletsStakes] = useState<Record<string, WalletStake[]>>({});
   const [selectedWallet, setSelectedWallet] = useState<SelectedWalletInfo | null>(null);
   const [stakingAnalysis, setStakingAnalysis] = useState<AnalysisResult | null>(null);
   const [isStakingAnalysisLoading, setIsStakingAnalysisLoading] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('darkMode') === 'true';
+    }
+    return false;
+  });
 
   const networks = kilnService.getSupportedNetworks();
+
+  useEffect(() => {
+    if (isDarkMode) {
+      document.body.classList.add('dark');
+    } else {
+      document.body.classList.remove('dark');
+    }
+    localStorage.setItem('darkMode', isDarkMode.toString());
+  }, [isDarkMode]);
+
+  const ChatBox = () => {
+    const [messages, setMessages] = useState<Array<{text: string, isUser: boolean}>>([
+      {
+        text: "Hello! I'm your DeFi assistant. How can I help you optimize your portfolio today?",
+        isUser: false
+      }
+    ]);
+    const [input, setInput] = useState('');
+    const messagesEndRef = useRef<HTMLDivElement>(null);
+
+    const scrollToBottom = () => {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    };
+
+    useEffect(() => {
+      const lastMessage = messages[messages.length - 1];
+      if (lastMessage && !lastMessage.isUser) {
+        const timeoutId = setTimeout(scrollToBottom, 100);
+        return () => clearTimeout(timeoutId);
+      }
+    }, [messages]);
+
+    const handleSubmit = async (e: React.FormEvent) => {
+      e.preventDefault();
+      if (!input.trim()) return;
+
+      // Add user message
+      setMessages(prev => [...prev, {text: input, isUser: true}]);
+      const userMessage = input;
+      setInput('');
+
+      // Check if data is available
+      if (networksStats.size === 0) {
+        setMessages(prev => [...prev, {
+          text: "Sorry, network data is not yet available. Please wait a moment and try again.",
+          isUser: false
+        }]);
+        return;
+      }
+
+      try {
+        // Convert Map to object for JSON
+        const networkStatsObj = Object.fromEntries(networksStats);
+        
+        const response = await fetch('/api/magic-analysis', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            text: 'Your an IA Agent for DEFI, answer the user question with a little summary of the question : "' + userMessage + '" with this data : ' + JSON.stringify(networkStatsObj)
+          })
+        });
+        const data = await response.json();
+        
+        setMessages(prev => [...prev, {
+          text: data.candidates[0].content.parts[0].text,
+          isUser: false
+        }]);
+      } catch (error) {
+        console.error('Error getting response:', error);
+        setMessages(prev => [...prev, {
+          text: "Sorry, I encountered an error. Please try again.",
+          isUser: false
+        }]);
+      }
+    };
+
+    return (
+      <div className="flex flex-col h-[400px] bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden">
+        <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-blue-600 to-purple-600">
+          <div className="flex flex-col">
+            <h2 className="text-lg font-medium text-white flex items-center gap-2">
+              <span className="text-xl">🤖</span>
+              DeFi AI Agent Chat
+            </h2>
+            <span className="text-xs text-blue-100 mt-1">powered by ElizaOS</span>
+          </div>
+        </div>
+        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          {messages.map((message, index) => (
+            <div
+              key={index}
+              className={`flex ${message.isUser ? 'justify-end' : 'justify-start'}`}
+            >
+              <div
+                className={`max-w-[80%] rounded-lg px-4 py-2 ${
+                  message.isUser
+                    ? 'bg-blue-500 text-white'
+                    : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200'
+                }`}
+                dangerouslySetInnerHTML={{ 
+                  __html: formatMarkdown(message.text) 
+                }}
+              />
+            </div>
+          ))}
+          <div ref={messagesEndRef} />
+        </div>
+
+        <form onSubmit={handleSubmit} className="p-4 border-t border-gray-200 dark:border-gray-700">
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="Ask ElizaOS about your DeFi strategy..."
+              className="flex-1 px-4 py-2 border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
+            />
+            <button
+              type="submit"
+              className="px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg hover:from-blue-600 hover:to-purple-600 transition-all duration-200"
+            >
+              Send
+            </button>
+          </div>
+        </form>
+      </div>
+    );
+  };
 
   const toggleFavorite = (networkId: string) => {
     const newFavorites = favorites.includes(networkId)
@@ -308,6 +344,13 @@ export default function Dashboard() {
       setSortField(field);
       setSortOrder('asc');
     }
+  };
+
+  const handleButtonClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    e.stopPropagation();  // Empêche la propagation de l'événement
+    const button = e.currentTarget;
+    button.blur();  // Retire le focus du bouton après le clic
   };
 
   const filteredAndSortedNetworks = networks
@@ -463,24 +506,32 @@ Network: ${JSON.stringify(networksStats.get(networkId))}
     const networkStakes = walletsStakes[network.id] || [];
 
     return (
-      <div key={network.id} className="bg-white p-6 rounded-lg shadow-lg relative">
+      <div key={network.id} className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg relative">
         <div className="flex justify-between items-start mb-4">
           <div className="flex items-center gap-2">
             <button
-              onClick={() => toggleFavorite(network.id)}
-              className="flex items-center justify-center w-8 h-8 rounded-full hover:bg-gray-100"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                toggleFavorite(network.id);
+              }}
+              className="prevent-scroll flex items-center justify-center w-8 h-8 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"
             >
               <span className={`text-2xl leading-none ${isFavorite ? 'text-yellow-400' : 'text-gray-300'}`}>
                 ★
               </span>
             </button>
-            <h2 className="text-xl font-semibold">{network.name}</h2>
+            <h2 className="text-xl font-semibold dark:text-white">{network.name}</h2>
           </div>
           
           {!isSpiko && (
             <button
-              onClick={() => setSelectedNetwork(network)}
-              className="px-3 py-1 rounded text-sm flex items-center gap-1 bg-blue-50 text-blue-600 hover:bg-blue-100"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setSelectedNetwork(network);
+              }}
+              className="prevent-scroll px-3 py-1 rounded text-sm flex items-center gap-1 bg-blue-50 dark:bg-blue-900 text-blue-600 dark:text-blue-200 hover:bg-blue-100 dark:hover:bg-blue-800"
             >
               <span className="text-lg">⚙️</span>
               Wallets{networkWallets.length ? ` (${networkWallets.length})` : ''}
@@ -491,15 +542,15 @@ Network: ${JSON.stringify(networksStats.get(networkId))}
         {stats ? (
           <div className="space-y-2">
             <div className="flex justify-between items-center">
-              <span className="text-gray-600">APY</span>
-              <span className="font-medium text-green-600">
+              <span className="text-gray-600 dark:text-gray-300">APY</span>
+              <span className="font-medium text-green-600 dark:text-green-400">
                 {stats.apy.toFixed(2)}%
               </span>
             </div>
             {!isSpiko && (
               <div className="flex justify-between items-center">
-                <span className="text-gray-600">Prix</span>
-                <span className="font-medium">
+                <span className="text-gray-600 dark:text-gray-300">Prix</span>
+                <span className="font-medium dark:text-white">
                   ${stats.price.toFixed(2)}
                 </span>
               </div>
@@ -511,7 +562,7 @@ Network: ${JSON.stringify(networksStats.get(networkId))}
 
         {!selectedNetwork && !isSpiko && networkWallets.length > 0 && (
           <div className="mt-4 space-y-1">
-            <div className="text-sm font-medium text-gray-600">
+            <div className="text-sm font-medium text-gray-600 dark:text-gray-300">
               Wallets ({networkWallets.length}):
             </div>
             <div className="space-y-2 max-h-48 overflow-y-auto">
@@ -530,8 +581,12 @@ Network: ${JSON.stringify(networksStats.get(networkId))}
                 return (
                   <div 
                     key={wallet.address} 
-                    className="text-sm text-gray-500 flex flex-col gap-1 p-2 bg-gray-50 rounded cursor-pointer hover:bg-gray-100"
-                    onClick={() => setSelectedWallet({ networkId: network.id, wallet })}
+                    className="text-sm text-gray-500 flex flex-col gap-1 p-2 bg-gray-50 dark:bg-gray-700 rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setSelectedWallet({ networkId: network.id, wallet });
+                    }}
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
@@ -565,29 +620,48 @@ Network: ${JSON.stringify(networksStats.get(networkId))}
   };
 
   return (
-    <main className="min-h-screen bg-gray-50">
+    <main className="min-h-screen bg-gray-50 dark:bg-slate-900 transition-colors duration-200">
       <div className="container mx-auto">
-        <div className="mb-8 bg-white shadow-sm rounded-lg p-6">
+        <div className="mb-8 bg-white dark:bg-slate-800 shadow-sm rounded-lg p-6">
           <div className="flex flex-col gap-6">
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-3">
                 <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                   DeFi AI Agent
                 </h1>
-                <span className="px-3 py-1 bg-blue-100 text-blue-800 text-sm font-medium rounded-full">
+                <span className="px-3 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-100 text-sm font-medium rounded-full">
                   Beta
                 </span>
               </div>
-              <button
-                onClick={handleMagicAnalysis}
-                className="px-6 py-2.5 bg-gradient-to-r from-purple-600 to-blue-500 text-white rounded-lg 
-                          hover:from-purple-700 hover:to-blue-600 transition-all duration-200 
-                          shadow-md hover:shadow-lg transform hover:-translate-y-0.5
-                          flex items-center gap-2"
-              >
-                <span className="text-xl">✨</span>
-                <span>Magic Analysis</span>
-              </button>
+              <div className="flex items-center gap-4">
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setIsDarkMode(!isDarkMode);
+                  }}
+                  className="p-2.5 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-200"
+                  title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
+                >
+                  <span className="text-xl">
+                    {isDarkMode ? '🌞' : '🌙'}
+                  </span>
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleMagicAnalysis();
+                  }}
+                  className="px-6 py-2.5 bg-gradient-to-r from-purple-600 to-blue-500 text-white rounded-lg 
+                            hover:from-purple-700 hover:to-blue-600 transition-all duration-200 
+                            shadow-md hover:shadow-lg transform hover:-translate-y-0.5
+                            flex items-center gap-2"
+                >
+                  <span className="text-xl">✨</span>
+                  <span>Magic Analysis</span>
+                </button>
+              </div>
             </div>
 
             <div className="flex items-center gap-4">
@@ -595,11 +669,14 @@ Network: ${JSON.stringify(networksStats.get(networkId))}
                 <input
                   type="text"
                   placeholder="Rechercher un réseau..."
-                  className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg 
-                            focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
-                            transition-all duration-200"
+                  className="w-full pl-10 pr-4 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-900 dark:text-gray-100 rounded-lg 
+                            focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
                   value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onChange={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setSearchTerm(e.target.value);
+                  }}
                 />
                 <svg 
                   className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
@@ -619,8 +696,12 @@ Network: ${JSON.stringify(networksStats.get(networkId))}
 
               <div className="flex items-center gap-2">
                 <button
-                  onClick={() => toggleSort('favorites')}
-                  className={`px-4 py-2 rounded-lg flex items-center gap-2 transition-all duration-200
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    toggleSort('favorites');
+                  }}
+                  className={`prevent-scroll px-4 py-2 rounded-lg flex items-center gap-2 transition-all duration-200
                     ${sortField === 'favorites' 
                       ? 'bg-yellow-100 text-yellow-800 border border-yellow-200' 
                       : 'bg-gray-50 text-gray-700 border border-gray-200 hover:bg-gray-100'}`}
@@ -632,8 +713,12 @@ Network: ${JSON.stringify(networksStats.get(networkId))}
                 {['name', 'price', 'apy'].map((field) => (
                   <button
                     key={field}
-                    onClick={() => toggleSort(field as SortField)}
-                    className={`px-4 py-2 rounded-lg transition-all duration-200
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      toggleSort(field as SortField);
+                    }}
+                    className={`prevent-scroll px-4 py-2 rounded-lg transition-all duration-200
                       ${sortField === field 
                         ? 'bg-blue-100 text-blue-800 border border-blue-200' 
                         : 'bg-gray-50 text-gray-700 border border-gray-200 hover:bg-gray-100'}`}
@@ -644,8 +729,12 @@ Network: ${JSON.stringify(networksStats.get(networkId))}
                 ))}
 
                 <button
-                  onClick={fetchAllNetworksData}
-                  className="p-2.5 rounded-lg hover:bg-blue-50 border border-gray-200 transition-all duration-200
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    fetchAllNetworksData();
+                  }}
+                  className="prevent-scroll p-2.5 rounded-lg hover:bg-blue-50 border border-gray-200 transition-all duration-200
                             hover:border-blue-300 group"
                   title="Refresh data"
                 >
@@ -670,7 +759,7 @@ Network: ${JSON.stringify(networksStats.get(networkId))}
         </div>
 
         <div className="flex gap-8">
-          <div className="flex-1">
+          <div className="scrollable flex-1 overflow-y-auto p-4 space-y-4">
             {loading ? (
               <div className="flex justify-center items-center min-h-[400px]">
                 <div className="text-xl text-gray-600">Chargement des données...</div>
@@ -687,12 +776,11 @@ Network: ${JSON.stringify(networksStats.get(networkId))}
           </div>
 
           <div className="w-[400px] space-y-6">
-            <ChatBox />
+            <div className="bg-white dark:bg-slate-800 rounded-lg shadow-lg overflow-hidden">
+              <ChatBox />
+            </div>
             
-            <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-              <div className="p-4 border-b border-gray-200">
-                <h2 className="text-lg font-medium">Kiln Overview</h2>
-              </div>
+            <div className="bg-white dark:bg-slate-800 rounded-lg shadow-lg overflow-hidden">
               <iframe
                 src="https://9e1bfc07-2b78-433e-9c30-fee293f2bfc8.widget.testnet.kiln.fi/overview"
                 className="w-full h-[800px]"
@@ -774,11 +862,15 @@ Network: ${JSON.stringify(networksStats.get(networkId))}
                   </div>
 
                   <button
-                    onClick={() => handleStakingAnalysis(
-                      selectedWallet.networkId,
-                      selectedWallet.wallet,
-                      stakes
-                    )}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      handleStakingAnalysis(
+                        selectedWallet.networkId,
+                        selectedWallet.wallet,
+                        stakes
+                      );
+                    }}
                     className="w-full bg-gradient-to-r from-purple-600 to-blue-500 text-white px-6 py-3 rounded-lg 
                               hover:from-purple-700 hover:to-blue-600 transition-all duration-200 
                               shadow-lg hover:shadow-xl transform hover:-translate-y-0.5
