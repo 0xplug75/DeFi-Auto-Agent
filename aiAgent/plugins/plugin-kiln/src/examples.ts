@@ -11,7 +11,7 @@ export const getStakingStatisticsExamples: ActionExample[][] = [
         {
             user: "{{agent}}",
             content: {
-                text: "Let me give you some statistics about the gross annual percentage yield on various chains.",
+                text: "",
                 action: "KILN_GET_STAKING_STATISTICS",
             },
         }
@@ -26,8 +26,55 @@ export const getStakingStatisticsExamples: ActionExample[][] = [
         {
             user: "{{agent}}",
             content: {
-                text: "Let me give you some statistics about the gross annual percentage yield on various chains.",
+                text: "",
                 action: "KILN_GET_STAKING_STATISTICS",
+            },
+        }
+    ],
+]
+
+export const getVaultsExamples: ActionExample[][] = [
+    [
+        {
+            user: "{{user1}}",
+            content: {
+                text: "What are Kiln's Vaults addresses?",
+            },
+        },
+        {
+            user: "{{agent}}",
+            content: {
+                text: "",
+                action: "KILN_GET_VAULT",
+            },
+        }
+    ],
+    [
+        {
+            user: "{{user1}}",
+            content: {
+                text: "How can i use Kiln's staking solutions?",
+            },
+        },
+        {
+            user: "{{agent}}",
+            content: {
+                text: "",
+                action: "KILN_GET_VAULT",
+            },
+        }
+    ],
+    [
+        {
+            user: "{{user1}}",
+            content: {
+                text: "Pick one vault and transfer my funds.",
+            },
+        },
+        {
+            user: "{{agent}}",
+            content: {
+                text: "Sure!",
             },
         }
     ],

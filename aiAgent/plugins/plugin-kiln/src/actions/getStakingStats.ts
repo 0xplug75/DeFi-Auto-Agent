@@ -44,11 +44,11 @@ export const getStakingStatisticsAction: Action = {
             );
             if (callback) {
                 const combinedText = StakingStatsData.map(stakingData =>
-                    `${stakingData.chain.toUpperCase()} :\r\n - ${stakingData.data.nb_validators} validators.\r\n - ${stakingData.data.network_gross_apy.toFixed(2)}% og gross APY`
+                    `${stakingData.chain.toUpperCase()} :\r\n - ${stakingData.data.nb_validators} validators.\r\n - ${stakingData.data.network_gross_apy.toFixed(2)}% of gross APY`
                 ).join('\r\n');
 
                 callback({
-                    text: `Here are Staking Statistics: ${combinedText}`,
+                    text: `Here are statistics about staking on different chains :\r\n${combinedText}`,
                 });
                 return true;
             }
