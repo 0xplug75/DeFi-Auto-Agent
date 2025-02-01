@@ -156,7 +156,7 @@ export const mainCharacter= {
         "maxSpeakers": 2,
         "topics": ["Blockchain Trends", "AI Innovations", "Quantum Computing"],
         "typicalDurationMinutes": 45,
-        "idleKickTimeoutMs": 300000,
+        "idleKickTimeoutMs": 600000,
         "minIntervalBetweenSpacesMinutes": 1,
         "businessHoursOnly": false,
         "randomChance": 1,

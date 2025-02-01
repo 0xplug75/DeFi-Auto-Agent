@@ -12,13 +12,23 @@ const nextConfig = {
     return config;
   },
   async rewrites() {
-    return [
-      {
-        source: '/api/:path*',
-        destination: 'http://localhost:3000/api/:path*'
-      }
-    ]
-  }
+    return {
+      beforeFiles: [
+        {
+          source: '/api/:path*',
+          destination: 'http://localhost:3005/api/:path*',
+        },
+      ],
+    };
+  },
+  api: {
+    bodyParser: {
+      sizeLimit: '1mb',
+    },
+    responseLimit: false,
+    externalResolver: true,
+    timeout: 120000,
+  },
 }
 
 module.exports = nextConfig

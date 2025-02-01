@@ -30,6 +30,9 @@ export default function Dashboard() {
     return {};
   });
   const [selectedNetwork, setSelectedNetwork] = useState<NetworkInfo | null>(null);
+  const [isAnalysisLoading, setIsAnalysisLoading] = useState(false);
+  const [analysisResult, setAnalysisResult] = useState(null);
+  const [sidePanelOpen, setSidePanelOpen] = useState(false);
 
   const networks = kilnService.getSupportedNetworks();
 
@@ -107,6 +110,31 @@ export default function Dashboard() {
   };
 
   const closeWalletPanel = () => setSelectedNetwork(null);
+
+  const handleMagicAnalysis = async () => {
+    setIsAnalysisLoading(true);
+    setSidePanelOpen(true);
+
+    try {
+      const response = await fetch('/api/magic-analysis', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          networks: networks.map(network => ({...network, stats: networksStats.get(network.id)})),
+          wallets,
+        })
+      });
+      const data = await response.json();
+      
+      setAnalysisResult(data);
+    } catch (error) {
+      console.error('Erreur lors de l\'analyse:', error);
+    } finally {
+      setIsAnalysisLoading(false);
+    }
+  };
 
   const renderNetworkCard = (network: NetworkInfo) => {
     const stats = networksStats.get(network.id);
@@ -191,7 +219,7 @@ export default function Dashboard() {
         <div className="max-w-6xl mx-auto">
           <div className="flex flex-col space-y-4 mb-8">
             <div className="flex items-center gap-4">
-              <h1 className="text-3xl font-bold whitespace-nowrap">APY par Réseau</h1>
+              <h1 className="text-3xl font-bold whitespace-nowrap">DeFI AI Agent</h1>
               
               <div className="flex-1 flex items-center gap-4">
                 <input
@@ -240,11 +268,38 @@ export default function Dashboard() {
 
                 <button
                   onClick={fetchAllNetworksData}
-                  className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors whitespace-nowrap"
+                  className="p-2 rounded hover:bg-blue-100 transition-colors"
+                  title="Refresh data"
                 >
-                  Rafraîchir
+                  <svg 
+                    xmlns="http://www.w3.org/2000/svg" 
+                    width="24" 
+                    height="24" 
+                    viewBox="0 0 24 24" 
+                    fill="none" 
+                    stroke="currentColor" 
+                    strokeWidth="2" 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round"
+                    className="text-blue-500"
+                  >
+                    <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.3"/>
+                  </svg>
                 </button>
+               
               </div>
+            </div>
+            <div className="flex items-center gap-4">
+            <button
+                  onClick={handleMagicAnalysis}
+                  className="bg-gradient-to-r from-purple-600 to-blue-500 text-white px-6 py-2 rounded-lg 
+                            hover:from-purple-700 hover:to-blue-600 transition-all duration-200 
+                            shadow-lg hover:shadow-xl transform hover:-translate-y-0.5
+                            flex items-center gap-2"
+                >
+                  <span className="text-xl">✨</span>
+                  <span>Magic Analysis</span>
+                </button>
             </div>
           </div>
 
@@ -265,16 +320,23 @@ export default function Dashboard() {
       </main>
 
       <SidePanel
-        isOpen={selectedNetwork !== null}
-        onClose={closeWalletPanel}
-        title={`Gestion des wallets - ${selectedNetwork?.name || ''}`}
+        isOpen={sidePanelOpen}
+        onClose={() => setSidePanelOpen(false)}
+        title="Analyse Magique"
       >
-        {selectedNetwork && (
-          <WalletManager
-            networkId={selectedNetwork.id}
-            wallets={wallets[selectedNetwork.id] || []}
-            onSave={saveWallets}
-          />
+        {isAnalysisLoading ? (
+          <div className="p-4 space-y-4">
+            <div className="h-4 bg-gray-200 rounded animate-pulse w-3/4"></div>
+            <div className="h-4 bg-gray-200 rounded animate-pulse w-1/2"></div>
+            <div className="h-4 bg-gray-200 rounded animate-pulse w-5/6"></div>
+            <div className="h-4 bg-gray-200 rounded animate-pulse w-2/3"></div>
+          </div>
+        ) : (
+          <div className="p-4">
+            {analysisResult && (
+              <div>{/* Affichage de votre résultat d'analyse */}</div>
+            )}
+          </div>
         )}
       </SidePanel>
     </>
