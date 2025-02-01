@@ -10,6 +10,16 @@ import { TruncatedAddress } from './TruncatedAddress';
 type SortField = 'name' | 'price' | 'apy' | 'favorites';
 type SortOrder = 'asc' | 'desc';
 
+type AnalysisResult = {
+  candidates: Array<{
+    content: {
+      parts: Array<{
+        text: string;
+      }>;
+    };
+  }>;
+};
+
 export default function Dashboard() {
   const [networksStats, setNetworksStats] = useState<Map<string, NetworkStats>>(new Map());
   const [loading, setLoading] = useState(true);
@@ -31,7 +41,7 @@ export default function Dashboard() {
   });
   const [selectedNetwork, setSelectedNetwork] = useState<NetworkInfo | null>(null);
   const [isAnalysisLoading, setIsAnalysisLoading] = useState(false);
-  const [analysisResult, setAnalysisResult] = useState(null);
+  const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
   const [sidePanelOpen, setSidePanelOpen] = useState(false);
 
   const networks = kilnService.getSupportedNetworks();
@@ -140,6 +150,7 @@ export default function Dashboard() {
     const stats = networksStats.get(network.id);
     const isFavorite = favorites.includes(network.id);
     const networkWallets = wallets[network.id] || [];
+    const isSpiko = network.id.startsWith('spiko-');
     
     return (
       <div key={network.id} className="bg-white p-6 rounded-lg shadow-lg relative">
@@ -156,13 +167,15 @@ export default function Dashboard() {
             <h2 className="text-xl font-semibold">{network.name}</h2>
           </div>
           
-          <button
-            onClick={() => setSelectedNetwork(network)}
-            className="px-3 py-1 rounded text-sm flex items-center gap-1 bg-blue-50 text-blue-600 hover:bg-blue-100"
-          >
-            <span className="text-lg">⚙️</span>
-            Wallets{networkWallets.length ? ` (${networkWallets.length})` : ''}
-          </button>
+          {!isSpiko && (
+            <button
+              onClick={() => setSelectedNetwork(network)}
+              className="px-3 py-1 rounded text-sm flex items-center gap-1 bg-blue-50 text-blue-600 hover:bg-blue-100"
+            >
+              <span className="text-lg">⚙️</span>
+              Wallets{networkWallets.length ? ` (${networkWallets.length})` : ''}
+            </button>
+          )}
         </div>
 
         {stats ? (
@@ -173,18 +186,20 @@ export default function Dashboard() {
                 {stats.apy.toFixed(2)}%
               </span>
             </div>
-            <div className="flex justify-between items-center">
-              <span className="text-gray-600">Prix</span>
-              <span className="font-medium">
-                ${stats.price.toFixed(2)}
-              </span>
-            </div>
+            {!isSpiko && (
+              <div className="flex justify-between items-center">
+                <span className="text-gray-600">Prix</span>
+                <span className="font-medium">
+                  ${stats.price.toFixed(2)}
+                </span>
+              </div>
+            )}
           </div>
         ) : (
           <p className="text-gray-500">Données non disponibles</p>
         )}
 
-        {!selectedNetwork && networkWallets.length > 0 && (
+        {!selectedNetwork && !isSpiko && networkWallets.length > 0 && (
           <div className="mt-4 space-y-1">
             <div className="text-sm font-medium text-gray-600">
               Wallets ({networkWallets.length}):
@@ -323,6 +338,7 @@ export default function Dashboard() {
         isOpen={sidePanelOpen}
         onClose={() => setSidePanelOpen(false)}
         title="Analyse Magique"
+        className="w-[800px]"
       >
         {isAnalysisLoading ? (
           <div className="p-4 space-y-4">
@@ -332,9 +348,33 @@ export default function Dashboard() {
             <div className="h-4 bg-gray-200 rounded animate-pulse w-2/3"></div>
           </div>
         ) : (
-          <div className="p-4">
+          <div className="p-8">
             {analysisResult && (
-              <div>{/* Affichage de votre résultat d'analyse */}</div>
+              <div className="prose max-w-none">
+                {analysisResult.candidates[0].content.parts[0].text.split('\n\n').map((paragraph, index) => {
+                  if (paragraph.startsWith('**')) {
+                    // Handle headers
+                    return <h3 key={index} className="font-bold text-lg mt-4">{paragraph.replace(/\*\*/g, '')}</h3>;
+                  } else if (paragraph.includes('* **')) {
+                    // Handle bullet points
+                    return (
+                      <ul key={index} className="list-disc pl-6 mt-2">
+                        {paragraph.split('\n').map((item, i) => (
+                          <li key={i} dangerouslySetInnerHTML={{
+                            __html: item
+                              .replace(/\* \*\*/g, '')
+                              .replace(/\*\*/g, '<strong>')
+                              .replace(/\*/g, '</strong>')
+                          }} />
+                        ))}
+                      </ul>
+                    );
+                  } else {
+                    // Regular paragraphs
+                    return <p key={index} className="mt-2">{paragraph}</p>;
+                  }
+                })}
+              </div>
             )}
           </div>
         )}

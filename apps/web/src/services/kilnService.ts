@@ -28,7 +28,9 @@ const SUPPORTED_NETWORKS: NetworkInfo[] = [
   { id: 'xtz', name: 'Tezos' },
   { id: 'ton', name: 'The Open Network' },
   // { id: 'trx', name: 'Tron' },
-  { id: 'zeta', name: 'ZetaChain' }
+  { id: 'zeta', name: 'ZetaChain' },
+  { id: 'spiko-ustbl', name: 'Spiko USTBL' },
+  { id: 'spiko-eutbl', name: 'Spiko EUTBL' }
 ];
 
 export interface NetworkWallet {
@@ -58,7 +60,9 @@ export const kilnService = {
     const statsMap = new Map<string, NetworkStats>();
 
     await Promise.all(
-      networks.map(async (network) => {
+      networks
+      .filter(network => network.id !== 'spiko-ustbl' && network.id !== 'spiko-eutbl')
+      .map(async (network) => {
         try {
           const stats = await this.getNetworkStats(network.id);
           console.log(`Stats for ${network.id}:`, stats);
@@ -68,6 +72,29 @@ export const kilnService = {
         }
       })
     );
+
+    // Ajout des stats pour Spiko
+    try {
+      const [ustblResponse, eutblResponse] = await Promise.all([
+        fetch('/api/spiko/USTBL/yield'),
+        fetch('/api/spiko/EUTBL/yield')
+      ]);
+
+      const ustblData = await ustblResponse.json();
+      const eutblData = await eutblResponse.json();
+
+      statsMap.set('spiko-ustbl', {
+        price: 1.00,
+        apy: parseFloat(ustblData.dailyYield) * 100,
+      });
+
+      statsMap.set('spiko-eutbl', {
+        price: 1.00,
+        apy: parseFloat(eutblData.dailyYield) * 100,
+      });
+    } catch (error) {
+      console.error('Error fetching Spiko data:', error);
+    }
 
     return statsMap;
   }

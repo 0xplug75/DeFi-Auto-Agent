@@ -15,6 +15,7 @@
     "postinstall": "turbo run build --filter=@kiln-monorepo/shared"
   },
   "devDependencies": {
+    "@tailwindcss/typography": "^0.5.16",
     "eslint": "^8.48.0",
     "prettier": "^3.0.3",
     "turbo": "latest"

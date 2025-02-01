@@ -75,5 +75,5 @@ export const kilnController = {
     } catch (error) {
       res.status(500).json({ error: 'Failed to fetch rewards' });
     }
-  }
+  },
 }; 

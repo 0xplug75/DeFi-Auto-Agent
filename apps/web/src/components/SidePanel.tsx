@@ -5,9 +5,10 @@ interface SidePanelProps {
   onClose: () => void;
   title: string;
   children: React.ReactNode;
+  className?: string;
 }
 
-export function SidePanel({ isOpen, onClose, title, children }: SidePanelProps) {
+export function SidePanel({ isOpen, onClose, title, children, className = '' }: SidePanelProps) {
   // Empêcher le scroll du body quand le panel est ouvert
   useEffect(() => {
     if (isOpen) {
@@ -31,7 +32,11 @@ export function SidePanel({ isOpen, onClose, title, children }: SidePanelProps) 
       />
       
       {/* Panel */}
-      <div className="fixed inset-y-0 right-0 w-96 bg-white shadow-xl z-50 transform transition-transform">
+      <div
+        className={`fixed inset-y-0 right-0 transform ${
+          isOpen ? 'translate-x-0' : 'translate-x-full'
+        } transition-transform duration-300 ease-in-out bg-white shadow-xl z-50 ${className}`}
+      >
         <div className="h-full flex flex-col">
           {/* Header */}
           <div className="flex items-center justify-between px-6 py-4 border-b">

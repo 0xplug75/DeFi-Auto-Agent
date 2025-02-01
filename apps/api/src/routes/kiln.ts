@@ -1,11 +1,13 @@
 import express from 'express';
 import { kilnController } from '../controllers/kilnController';
+import { spikoController } from '../controllers/spikoController';
 
 const router = express.Router();
 
 router.get('/:networkId/network-stats', kilnController.getNetworkStats);
 router.get('/:networkId/balance', kilnController.getBalance);
 router.get('/:networkId/rewards', kilnController.getRewards);
+router.get('/spiko/:shareClass/yield', spikoController.getSpikoYield);
 
 router.post('/magic-analysis', async (req, res) => {
   try {
