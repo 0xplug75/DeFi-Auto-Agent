@@ -10,7 +10,7 @@ const DashboardComponent = dynamic(
 
 export default function Home() {
   return (
-    <Suspense fallback={<div>Chargement...</div>}>
+    <Suspense fallback={<div>Loading...</div>}>
       <DashboardComponent />
     </Suspense>
   );

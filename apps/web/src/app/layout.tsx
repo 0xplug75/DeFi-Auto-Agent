@@ -5,7 +5,7 @@ import './globals.css';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Kiln Dashboard',
+  title: 'DeFI AI Agent',
   description: 'Dashboard pour visualiser les données Kiln',
 };
 
