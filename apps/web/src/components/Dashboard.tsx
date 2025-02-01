@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { NetworkStats } from '@kiln-monorepo/shared';
+import type { NetworkStats } from '@kiln-monorepo/shared';
 import { kilnService, NetworkInfo, NetworkWallet, NetworkWallets } from '../services/kilnService';
 import { WalletManager } from './WalletManager';
 import { SidePanel } from './SidePanel';
@@ -19,6 +19,20 @@ type AnalysisResult = {
     };
   }>;
 };
+
+interface WalletStake {
+  address: string;
+  stakes: Array<{
+    balance: string;
+    gross_apy: number;
+    rewards_to_withdraw?: string;
+  }>;
+}
+
+interface SelectedWalletInfo {
+  networkId: string;
+  wallet: NetworkWallet;
+}
 
 export default function Dashboard() {
   const [networksStats, setNetworksStats] = useState<Map<string, NetworkStats>>(new Map());
@@ -43,6 +57,8 @@ export default function Dashboard() {
   const [isAnalysisLoading, setIsAnalysisLoading] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
   const [sidePanelOpen, setSidePanelOpen] = useState(false);
+  const [walletsStakes, setWalletsStakes] = useState<Record<string, WalletStake[]>>({});
+  const [selectedWallet, setSelectedWallet] = useState<SelectedWalletInfo | null>(null);
 
   const networks = kilnService.getSupportedNetworks();
 
@@ -109,8 +125,28 @@ export default function Dashboard() {
     }
   };
 
+  const fetchWalletStakes = async () => {
+    const stakes: Record<string, WalletStake[]> = {};
+    
+    for (const network of networks) {
+      const networkWallets = wallets[network.id] || [];
+      if (networkWallets.length > 0 && !network.id.startsWith('spiko-')) {
+        try {
+          const networkStakes = await kilnService.getWalletStakes(network.id, networkWallets);
+          console.log('Fetched stakes for network:', network.id, networkStakes);
+          stakes[network.id] = networkStakes;
+        } catch (error) {
+          console.error(`Error fetching stakes for ${network.id}:`, error);
+        }
+      }
+    }
+    
+    setWalletsStakes(stakes);
+  };
+
   useEffect(() => {
     fetchAllNetworksData();
+    fetchWalletStakes();
   }, []);
 
   const saveWallets = (networkId: string, newWallets: NetworkWallet[]) => {
@@ -152,6 +188,8 @@ export default function Dashboard() {
     const networkWallets = wallets[network.id] || [];
     const isSpiko = network.id.startsWith('spiko-');
     
+    const networkStakes = walletsStakes[network.id] || [];
+
     return (
       <div key={network.id} className="bg-white p-6 rounded-lg shadow-lg relative">
         <div className="flex justify-between items-start mb-4">
@@ -204,23 +242,40 @@ export default function Dashboard() {
             <div className="text-sm font-medium text-gray-600">
               Wallets ({networkWallets.length}):
             </div>
-            <div className="space-y-1 max-h-24 overflow-y-auto">
-              {networkWallets.map(wallet => (
-                <div 
-                  key={wallet.address} 
-                  className="text-sm text-gray-500 flex items-center gap-2"
-                  title={wallet.address}
-                >
-                  {wallet.label ? (
-                    <>
-                      <span className="font-medium">{wallet.label}:</span>
-                      <TruncatedAddress address={wallet.address} />
-                    </>
-                  ) : (
-                    <TruncatedAddress address={wallet.address} />
-                  )}
-                </div>
-              ))}
+            <div className="space-y-2 max-h-48 overflow-y-auto">
+              {networkWallets.map(wallet => {
+                const walletStakes = networkStakes.find(s => s.address === wallet.address)?.stakes || [];
+                const totalStaked = walletStakes.reduce((sum, stake) => 
+                  sum + parseFloat(stake.balance), 0
+                );
+                const averageApy = walletStakes.reduce((sum, stake) => 
+                  sum + stake.gross_apy, 0
+                ) / (walletStakes.length || 1);
+
+                return (
+                  <div 
+                    key={wallet.address} 
+                    className="text-sm text-gray-500 flex flex-col gap-1 p-2 bg-gray-50 rounded cursor-pointer hover:bg-gray-100"
+                    onClick={() => setSelectedWallet({ networkId: network.id, wallet })}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        {wallet.label && <span className="font-medium">{wallet.label}:</span>}
+                        <TruncatedAddress address={wallet.address} />
+                      </div>
+                      <div className="font-medium text-gray-700">
+                        {walletStakes.length} validators
+                      </div>
+                    </div>
+                    {walletStakes.length > 0 && (
+                      <div className="flex justify-between text-xs text-gray-600">
+                        <span>Total staked: {(totalStaked / 1e18).toFixed(2)} ETH</span>
+                        <span>Avg APY: {averageApy.toFixed(2)}%</span>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}
@@ -334,6 +389,25 @@ export default function Dashboard() {
         </div>
       </main>
 
+      {selectedNetwork && (
+        <SidePanel
+          isOpen={selectedNetwork !== null}
+          onClose={closeWalletPanel}
+          title={`Gérer les wallets - ${selectedNetwork.name}`}
+        >
+          <WalletManager
+            networkId={selectedNetwork.id}
+            wallets={wallets[selectedNetwork.id] || []}
+            onSave={(networkId: string, newWallets: NetworkWallet[]) => {
+              saveWallets(networkId, newWallets);
+              closeWalletPanel();
+              fetchWalletStakes();
+            }}
+            onClose={closeWalletPanel}
+          />
+        </SidePanel>
+      )}
+
       <SidePanel
         isOpen={sidePanelOpen}
         onClose={() => setSidePanelOpen(false)}
@@ -379,6 +453,74 @@ export default function Dashboard() {
           </div>
         )}
       </SidePanel>
+
+      {selectedWallet && (
+        <SidePanel
+          isOpen={selectedWallet !== null}
+          onClose={() => setSelectedWallet(null)}
+          title={`Détails du staking - ${selectedWallet.wallet.label || 'Wallet'}`}
+          className="w-[600px]"
+        >
+          <div className="p-6 space-y-6">
+            <div className="space-y-2">
+              <h3 className="text-lg font-medium">Informations du wallet</h3>
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <p className="text-sm text-gray-600">Adresse :</p>
+                <TruncatedAddress address={selectedWallet.wallet.address} className="font-mono" />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <h3 className="text-lg font-medium">Validators</h3>
+              {(() => {
+                const stakes = walletsStakes[selectedWallet.networkId]
+                  ?.find(s => s.address === selectedWallet.wallet.address)
+                  ?.stakes || [];
+                
+                const totalRewards = stakes.reduce((sum, stake) => 
+                  sum + parseFloat(stake.rewards_to_withdraw || '0'), 0
+                );
+
+                return (
+                  <>
+                    {stakes.map((stake, index) => (
+                      <div key={index} className="bg-gray-50 p-4 rounded-lg space-y-2">
+                        <div className="flex justify-between">
+                          <span className="text-sm text-gray-600">Balance</span>
+                          <span className="font-medium">{(parseFloat(stake.balance) / 1e18).toFixed(4)} ETH</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-sm text-gray-600">APY</span>
+                          <span className="font-medium text-green-600">{stake.gross_apy.toFixed(2)}%</span>
+                        </div>
+                        {stake.rewards_to_withdraw && parseFloat(stake.rewards_to_withdraw) > 0 && (
+                          <div className="flex justify-between">
+                            <span className="text-sm text-gray-600">Rewards à retirer</span>
+                            <span className="font-medium text-purple-600">
+                              {(parseFloat(stake.rewards_to_withdraw) / 1e18).toFixed(4)} ETH
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+
+                    {totalRewards > 0 && (
+                      <div className="mt-4 bg-purple-50 p-4 rounded-lg">
+                        <div className="flex justify-between items-center">
+                          <span className="font-medium text-purple-900">Total des rewards à retirer</span>
+                          <span className="font-bold text-purple-700">
+                            {(totalRewards / 1e18).toFixed(4)} ETH
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                  </>
+                );
+              })()}
+            </div>
+          </div>
+        </SidePanel>
+      )}
     </>
   );
 } 

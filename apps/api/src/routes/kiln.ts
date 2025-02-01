@@ -7,6 +7,8 @@ const router = express.Router();
 router.get('/:networkId/network-stats', kilnController.getNetworkStats);
 router.get('/:networkId/balance', kilnController.getBalance);
 router.get('/:networkId/rewards', kilnController.getRewards);
+router.get('/:networkId/stakes', kilnController.getStakes);
+
 router.get('/spiko/:shareClass/yield', spikoController.getSpikoYield);
 
 router.post('/magic-analysis', async (req, res) => {
@@ -15,16 +17,7 @@ router.post('/magic-analysis', async (req, res) => {
     const text = 'Analyze DeFi networks with the following networks stats: ' + JSON.stringify(req.body.networks) + ' and the following wallets: ' + JSON.stringify(req.body.wallets);
 
     console.log(text);
-    // const response = await fetch('http://localhost:3000/d9fadd09-480c-0c45-ab6b-33ce97e58e3f/message', {
-    //   method: 'POST',
-    //   headers: {
-    //     'Content-Type': 'application/json',
-    //   },
-    //   body: JSON.stringify({
-    //     text,
-    //     user: 'user'
-    //   }),
-    // });
+
     const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=AIzaSyBwBqUodQWDVFY_d_jaYr3UuJ3fmTij8CA', {
       method: 'POST',
       headers: {

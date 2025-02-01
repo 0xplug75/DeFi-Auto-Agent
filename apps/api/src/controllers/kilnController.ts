@@ -68,12 +68,42 @@ export const kilnController = {
         `${KILN_API_BASE_URL}/${networkId}/rewards`,
         {
           params: { wallets },
-          headers: { 'Authorization': `Bearer ${API_KEY}` }
+          headers: { 
+            'Authorization': `Bearer ${API_KEY}`,
+            'Accept': 'application/json'
+          }
+        }
+      );
+
+      // Log pour debug
+      console.log('Rewards response:', response.data);
+
+      res.json(response.data);
+    } catch (error) {
+      console.error('Error fetching rewards:', error);
+      res.status(500).json({ error: 'Failed to fetch rewards' });
+    }
+  },
+  async getStakes(req: Request, res: Response) {
+    try {
+      const { networkId } = req.params;
+      const { wallets } = req.query;
+      
+      console.log('Fetching stakes for network:', networkId, 'wallets:', wallets);
+      
+      const response = await axios.get(
+        `${KILN_API_BASE_URL}/${networkId}/stakes`,
+        {
+          params: { wallets },
+          headers: { 
+            'Authorization': `Bearer ${API_KEY}`,
+            'Accept': 'application/json'
+          }
         }
       );
       res.json(response.data);
     } catch (error) {
-      res.status(500).json({ error: 'Failed to fetch rewards' });
+      res.status(500).json({ error: 'Failed to fetch stakes' });
     }
   },
 }; 

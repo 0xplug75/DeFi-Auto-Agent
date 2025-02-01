@@ -7,7 +7,7 @@ import express, { Express } from 'express';
 import { kilnRoutes } from './routes/kiln';
 
 const app: Express = express();
-const PORT = process.env.PORT || 3005;
+const PORT = 3005;
 
 app.use(express.json());
 app.use('/api', kilnRoutes);

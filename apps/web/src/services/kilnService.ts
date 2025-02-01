@@ -1,4 +1,5 @@
 import { NetworkStats } from '@kiln-monorepo/shared';
+import axios from 'axios';
 
 export interface NetworkInfo {
   id: string;
@@ -33,13 +34,33 @@ const SUPPORTED_NETWORKS: NetworkInfo[] = [
   { id: 'spiko-eutbl', name: 'Spiko EUTBL' }
 ];
 
+export interface WalletBalance {
+  address: string;
+  balance: number;
+}
+
 export interface NetworkWallet {
   address: string;
   label?: string;
+  balance?: number;
 }
 
 export interface NetworkWallets {
   [networkId: string]: NetworkWallet[];
+}
+
+export interface ValidatorStake {
+  validator_address: string;
+  balance: string;
+  rewards: string;
+  gross_apy: number;
+  state: string;
+  deposit_tx_sender: string;
+}
+
+export interface WalletStakes {
+  address: string;
+  stakes: ValidatorStake[];
 }
 
 export const kilnService = {
@@ -97,5 +118,54 @@ export const kilnService = {
     }
 
     return statsMap;
+  },
+
+  async getWalletBalances(networkId: string, wallets: NetworkWallet[]): Promise<WalletBalance[]> {
+    try {
+      const addresses = wallets.map(w => w.address).join(',');
+      const response = await fetch(`/api/${networkId}/balance?wallets=${addresses}`);
+      if (!response.ok) throw new Error('Failed to fetch balances');
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Error fetching wallet balances:', error);
+      return [];
+    }
+  },
+
+  async getWalletStakes(networkId: string, wallets: NetworkWallet[]) {
+    const addresses = wallets.map(w => w.address).join(',');
+    try {
+      const [stakesResponse, rewardsResponse] = await Promise.all([
+        axios.get(`/api/${networkId}/stakes?wallets=${addresses}`),
+        axios.get(`/api/${networkId}/rewards?wallets=${addresses}`)
+      ]);
+
+      // Accéder aux données correctement
+      const stakes = stakesResponse.data.data || [];
+      const rewards = rewardsResponse.data.data || [];
+
+      // Log pour debug
+      console.log('Stakes response:', stakesResponse.data);
+      console.log('Rewards response:', rewardsResponse.data);
+
+      // Transformer les données en format attendu
+      return wallets.map(wallet => ({
+        address: wallet.address,
+        stakes: stakes
+          .filter((s: any) => s.deposit_tx_sender?.toLowerCase() === wallet.address.toLowerCase())
+          .map((s: any) => ({
+            balance: s.balance || '0',
+            gross_apy: s.gross_apy || 0,
+            rewards_to_withdraw: rewards.find((r: any) => 
+              r.address?.toLowerCase() === wallet.address.toLowerCase()
+            )?.rewards_to_withdraw || '0'
+          }))
+      }));
+
+    } catch (error) {
+      console.error('Error fetching stakes:', error);
+      return [];
+    }
   }
 }; 

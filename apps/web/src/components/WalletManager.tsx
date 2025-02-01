@@ -6,9 +6,10 @@ interface WalletManagerProps {
   networkId: string;
   wallets: NetworkWallet[];
   onSave: (networkId: string, wallets: NetworkWallet[]) => void;
+  onClose: () => void;
 }
 
-export function WalletManager({ networkId, wallets, onSave }: WalletManagerProps) {
+export function WalletManager({ networkId, wallets, onSave, onClose }: WalletManagerProps) {
   const [newAddress, setNewAddress] = useState('');
   const [newLabel, setNewLabel] = useState('');
 
