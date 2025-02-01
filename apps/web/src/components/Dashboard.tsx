@@ -26,6 +26,7 @@ interface WalletStake {
     balance: string;
     gross_apy: number;
     rewards_to_withdraw?: string;
+    rewards?: string;
   }>;
 }
 
@@ -190,6 +191,7 @@ export default function Dashboard() {
   const [selectedWallet, setSelectedWallet] = useState<SelectedWalletInfo | null>(null);
   const [stakingAnalysis, setStakingAnalysis] = useState<AnalysisResult | null>(null);
   const [isStakingAnalysisLoading, setIsStakingAnalysisLoading] = useState(false);
+  const [isAnalysisLoading, setIsAnalysisLoading] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(() => {
     if (typeof window !== 'undefined') {
       return localStorage.getItem('darkMode') === 'true';
@@ -456,7 +458,7 @@ Wallets: ${JSON.stringify(wallets)}
         })
       });
       const data = await response.json();
-      setAnalysisResult(data);
+      setStakingAnalysis(data);
     } catch (error) {
       console.error('Erreur lors de l\'analyse:', error);
     } finally {
@@ -762,7 +764,7 @@ Network: ${JSON.stringify(networksStats.get(networkId))}
           <div className="scrollable flex-1 overflow-y-auto p-4 space-y-4">
             {loading ? (
               <div className="flex justify-center items-center min-h-[400px]">
-                <div className="text-xl text-gray-600">Chargement des données...</div>
+                <div className="text-xl text-gray-600">Loading...</div>
               </div>
             ) : error ? (
               <div className="bg-red-50 border border-red-200 text-red-600 p-4 rounded">
@@ -802,9 +804,9 @@ Network: ${JSON.stringify(networksStats.get(networkId))}
           className="w-[600px]"
         >
           <WalletManager
-            network={selectedNetwork}
+            networkId={selectedNetwork.id}
             wallets={wallets[selectedNetwork.id] || []}
-            onSave={(newWallets) => saveWallets(selectedNetwork.id, newWallets)}
+            onSave={(newWallets: NetworkWallet[]) => saveWallets(selectedNetwork.id, newWallets)}
             onClose={closeWalletPanel}
           />
         </SidePanel>
@@ -817,7 +819,18 @@ Network: ${JSON.stringify(networksStats.get(networkId))}
         title="✨ Magic Analysis"
         className="w-[800px]"
       >
-        {/* ... reste du code ... */}
+        {isAnalysisLoading ? (
+          <div className="p-8 space-y-4">
+            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse w-3/4"></div>
+            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse w-1/2"></div>
+            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse w-5/6"></div>
+            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse w-2/3"></div>
+          </div>
+        ) : stakingAnalysis && (
+          <div className="p-8">
+            <AnalysisRenderer content={stakingAnalysis.candidates[0].content.parts[0].text} />
+          </div>
+        )}
       </SidePanel>
 
       {/* Wallet Details SidePanel */}

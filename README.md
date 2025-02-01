@@ -1,21 +1,44 @@
 # StakeWise AI 🚀
 
+## Monorepo
+
+apps/web is the frontend
+apps/api is the backend
+
 ## Technologies utilisées
 
 - Next.js 14 - Frontent + backend pour API request for security
-- ElizaOS - Agent IA pour l'arbitrage
 - TypeScript
 - Tailwind CSS
-- Web3Modal / Wagmi
+- Google gemini API
+- SPIKO API
+- Kiln API
 
 Here is our [Documentation](https://mogza.gitbook.io/defi-auto-agent)
 
-## Installation ElizaOS
+## Installation
 
 ```bash
-git clone https://github.com/mogza/elizaos.git
-cd elizaos
-pnpm install or pnpm install --frozen-lockfile
-pnpm build or pnpm run dev
+npm install
 ```
-pnpm install can take 15min to 1 hour to finish
+
+## Configuration
+
+```bash
+cp .env.example .env
+```
+
+
+## Run the project
+
+```bash
+npm run dev
+```
+
+
+## build the project
+
+```bash
+npm run build
+```
+
