@@ -14,7 +14,7 @@ router.get('/spiko/:shareClass/yield', spikoController.getSpikoYield);
 router.post('/magic-analysis', async (req, res) => {
   try {
     console.log(req.body);
-    const text = 'Analyze DeFi networks with the following networks stats: ' + JSON.stringify(req.body.networks) + ' and the following wallets: ' + JSON.stringify(req.body.wallets);
+    const text = `${req.body.text}`;
 
     console.log(text);
 

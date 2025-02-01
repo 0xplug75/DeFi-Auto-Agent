@@ -141,7 +141,6 @@ export const kilnService = {
         axios.get(`/api/${networkId}/rewards?wallets=${addresses}`)
       ]);
 
-      // Accéder aux données correctement
       const stakes = stakesResponse.data.data || [];
       const rewards = rewardsResponse.data.data || [];
 
@@ -149,7 +148,6 @@ export const kilnService = {
       console.log('Stakes response:', stakesResponse.data);
       console.log('Rewards response:', rewardsResponse.data);
 
-      // Transformer les données en format attendu
       return wallets.map(wallet => ({
         address: wallet.address,
         stakes: stakes
@@ -157,6 +155,7 @@ export const kilnService = {
           .map((s: any) => ({
             balance: s.balance || '0',
             gross_apy: s.gross_apy || 0,
+            rewards: s.rewards || '0',
             rewards_to_withdraw: rewards.find((r: any) => 
               r.address?.toLowerCase() === wallet.address.toLowerCase()
             )?.rewards_to_withdraw || '0'
