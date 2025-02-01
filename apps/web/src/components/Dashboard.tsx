@@ -35,6 +35,10 @@ interface SelectedWalletInfo {
   wallet: NetworkWallet;
 }
 
+interface NetworkWallets {
+  [networkId: string]: NetworkWallet[];
+}
+
 // Créez un composant réutilisable pour le formatage
 const AnalysisRenderer = ({ content }: { content: string }) => {
   const lines = content.split('\n');
@@ -181,7 +185,20 @@ export default function Dashboard() {
   });
   const [wallets, setWallets] = useState<NetworkWallets>(() => {
     if (typeof window !== 'undefined') {
-      return JSON.parse(localStorage.getItem('network_wallets') || '{}');
+      try {
+        const savedWallets = localStorage.getItem('network_wallets');
+        const parsedWallets = savedWallets ? JSON.parse(savedWallets) : {};
+        // Ensure each network's wallets is an array
+        Object.keys(parsedWallets).forEach(networkId => {
+          if (!Array.isArray(parsedWallets[networkId])) {
+            parsedWallets[networkId] = [];
+          }
+        });
+        return parsedWallets;
+      } catch (error) {
+        console.error('Error parsing wallets from localStorage:', error);
+        return {};
+      }
     }
     return {};
   });
@@ -189,6 +206,7 @@ export default function Dashboard() {
   const [sidePanelOpen, setSidePanelOpen] = useState(false);
   const [walletsStakes, setWalletsStakes] = useState<Record<string, WalletStake[]>>({});
   const [selectedWallet, setSelectedWallet] = useState<SelectedWalletInfo | null>(null);
+  const [magicAnalysis, setMagicAnalysis] = useState<AnalysisResult | null>(null);
   const [stakingAnalysis, setStakingAnalysis] = useState<AnalysisResult | null>(null);
   const [isStakingAnalysisLoading, setIsStakingAnalysisLoading] = useState(false);
   const [isAnalysisLoading, setIsAnalysisLoading] = useState(false);
@@ -220,17 +238,8 @@ export default function Dashboard() {
     const [input, setInput] = useState('');
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
-    const scrollToBottom = () => {
-      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    };
-
-    useEffect(() => {
-      const lastMessage = messages[messages.length - 1];
-      if (lastMessage && !lastMessage.isUser) {
-        const timeoutId = setTimeout(scrollToBottom, 100);
-        return () => clearTimeout(timeoutId);
-      }
-    }, [messages]);
+    // Calculate dynamic height based on message count
+    const chatHeight = messages.length > 2 ? 600 : 400; // Increase height when there are more messages
 
     const handleSubmit = async (e: React.FormEvent) => {
       e.preventDefault();
@@ -279,7 +288,10 @@ export default function Dashboard() {
     };
 
     return (
-      <div className="flex flex-col h-[400px] bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden">
+      <div 
+        className="flex flex-col bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden transition-all duration-300 ease-in-out" 
+        style={{ height: `${chatHeight}px` }}
+      >
         <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-blue-600 to-purple-600">
           <div className="flex flex-col">
             <h2 className="text-lg font-medium text-white flex items-center gap-2">
@@ -426,7 +438,10 @@ export default function Dashboard() {
   }, []);
 
   const saveWallets = (networkId: string, newWallets: NetworkWallet[]) => {
-    const updatedWallets = { ...wallets, [networkId]: newWallets };
+    const updatedWallets: NetworkWallets = {
+      ...wallets,
+      [networkId]: Array.isArray(newWallets) ? newWallets : []
+    };
     setWallets(updatedWallets);
     localStorage.setItem('network_wallets', JSON.stringify(updatedWallets));
   };
@@ -438,11 +453,9 @@ export default function Dashboard() {
     setSidePanelOpen(true);
 
     try {
-      let text = `Analyze and provide a structured markdown summary of DeFi networks:
-- Start with a header "DeFi Networks Analysis"
-- List key metrics and insights with bullet points
-- Format numbers properly (no scientific notation)
+      let text = `Analyze and provide a short structured markdown summary of DeFi networks:
 - Group information by network
+- Conclusion
 
 Details:
 Networks: ${JSON.stringify(networks.map(network => ({...network, stats: networksStats.get(network.id)})))}
@@ -458,7 +471,7 @@ Wallets: ${JSON.stringify(wallets)}
         })
       });
       const data = await response.json();
-      setStakingAnalysis(data);
+      setMagicAnalysis(data);
     } catch (error) {
       console.error('Erreur lors de l\'analyse:', error);
     } finally {
@@ -470,11 +483,10 @@ Wallets: ${JSON.stringify(wallets)}
     setIsStakingAnalysisLoading(true);
 
     try {
-      let text = `Analyze and provide a structured markdown summary of the following staking:
-- Start with a header "Staking Summary"
-- List key metrics and insights with bullet points
-- Format numbers properly (no scientific notation)
+      let text = `Analyze and provide a short structured markdown summary of the following staking:
+
 - Group information by: Balances, APY, Rewards
+- Conclusion
 
 Details:
 Wallet: ${JSON.stringify(wallet)}
@@ -502,10 +514,15 @@ Network: ${JSON.stringify(networksStats.get(networkId))}
   const renderNetworkCard = (network: NetworkInfo) => {
     const stats = networksStats.get(network.id);
     const isFavorite = favorites.includes(network.id);
-    const networkWallets = wallets[network.id] || [];
+    const networkWallets = Array.isArray(wallets[network.id]) ? wallets[network.id] : [];
     const isSpiko = network.id.startsWith('spiko-');
     
     const networkStakes = walletsStakes[network.id] || [];
+    
+    // Calculate total validators across all wallets for this network
+    const totalValidators = networkStakes.reduce((total, stake) => 
+      total + (stake.stakes?.length || 0), 0
+    );
 
     return (
       <div key={network.id} className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg relative">
@@ -537,6 +554,7 @@ Network: ${JSON.stringify(networksStats.get(networkId))}
             >
               <span className="text-lg">⚙️</span>
               Wallets{networkWallets.length ? ` (${networkWallets.length})` : ''}
+              {totalValidators > 0 && ` • ${totalValidators} validators`}
             </button>
           )}
         </div>
@@ -806,7 +824,7 @@ Network: ${JSON.stringify(networksStats.get(networkId))}
           <WalletManager
             networkId={selectedNetwork.id}
             wallets={wallets[selectedNetwork.id] || []}
-            onSave={(newWallets: NetworkWallet[]) => saveWallets(selectedNetwork.id, newWallets)}
+            onSave={(networkId: string, newWallets: NetworkWallet[]) => saveWallets(networkId, newWallets)}
             onClose={closeWalletPanel}
           />
         </SidePanel>
@@ -826,9 +844,9 @@ Network: ${JSON.stringify(networksStats.get(networkId))}
             <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse w-5/6"></div>
             <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse w-2/3"></div>
           </div>
-        ) : stakingAnalysis && (
+        ) : magicAnalysis && (
           <div className="p-8">
-            <AnalysisRenderer content={stakingAnalysis.candidates[0].content.parts[0].text} />
+            <AnalysisRenderer content={magicAnalysis.candidates[0].content.parts[0].text} />
           </div>
         )}
       </SidePanel>
