@@ -10,6 +10,8 @@ Grâce à l’intégration de technologies avancées telles que l’intelligence
 [![Next.js][Next.js]][Next-url]   
 [![Typescript][Typescript]][Typescript-url]   
 [![Tailwind][Tailwind]][Tailwind-url]   
+[![Gemini][Gemini]][Gemini-url]  
+[![Kiln][Kiln]][Kiln-url]   
 
 ## Lancer le projet
 Installation:
@@ -28,3 +30,5 @@ npm run dev
 [Typescript-url]: https://www.typescriptlang.org/
 [Tailwind]: https://img.shields.io/badge/Tailwind%20CSS-%2338B2AC.svg?style=for-the-badge&logo=tailwind-css&logoColor=white
 [Tailwind-url]: https://tailwindcss.com/
+[Gemini]: https://img.shields.io/badge/Google%20Gemini-886FBF?style=for-the-badge&logo=googlegemini&logoColor=fff
+[Gemini-url]: https://ai.google.dev/gemini-api/docs
