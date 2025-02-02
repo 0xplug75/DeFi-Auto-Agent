@@ -802,7 +802,7 @@ Network: ${JSON.stringify(networksStats.get(networkId))}
             
             <div className="bg-white dark:bg-slate-800 rounded-lg shadow-lg overflow-hidden">
               <iframe
-                src="https://9e1bfc07-2b78-433e-9c30-fee293f2bfc8.widget.testnet.kiln.fi/overview"
+                src={`https://9e1bfc07-2b78-433e-9c30-fee293f2bfc8.widget.testnet.kiln.fi/overview${isDarkMode ? '?theme=dark' : ''}`}
                 className="w-full h-[800px]"
                 frameBorder="0"
                 title="Kiln Overview"
