@@ -6,6 +6,11 @@ Grâce à l’intégration de technologies avancées telles que l’intelligence
 
 ### Documentation officielle : [Gitbook](https://wuildo.gitbook.io/defi-auto-agent)
 
+## Monorepo project 
+
+apps/web is the frontend
+apps/api is the backend
+
 ## Technologies utilisées
 [![Next.js][Next.js]][Next-url]   
 [![Typescript][Typescript]][Typescript-url]   
@@ -13,6 +18,7 @@ Grâce à l’intégration de technologies avancées telles que l’intelligence
 [![Kiln][Kiln]][Kiln-url]  
 [![Eliza][Eliza]][Eliza-url]  
 [![Gemini][Gemini]][Gemini-url]  
+
 
 ## Lancer le projet
 Installation:
