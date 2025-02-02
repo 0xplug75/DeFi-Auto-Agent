@@ -6,10 +6,10 @@ Grâce à l’intégration de technologies avancées telles que l’intelligence
 
 ### Documentation officielle : [Gitbook](https://wuildo.gitbook.io/defi-auto-agent)
 
-## Monorepo project 
+## Projet Monorepo
 
-apps/web is the frontend
-apps/api is the backend
+- Frontend => apps/web
+- Backend => apps/api
 
 ## Technologies utilisées
 [![Next.js][Next.js]][Next-url]   
