@@ -21,14 +21,6 @@ const nextConfig = {
       ],
     };
   },
-  api: {
-    bodyParser: {
-      sizeLimit: '1mb',
-    },
-    responseLimit: false,
-    externalResolver: true,
-    timeout: 120000,
-  },
 }
 
 module.exports = nextConfig

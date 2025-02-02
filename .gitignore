@@ -59,3 +59,7 @@ temp/
 # TypeScript
 *.tsbuildinfo
 next-env.d.ts
+
+# Local env
+.env.local
+.env.*.local

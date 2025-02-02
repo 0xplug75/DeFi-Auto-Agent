@@ -34,7 +34,7 @@ export const getStakingStatisticsAction: Action = {
 
         const config = await validateKilnConfig(runtime);
         const kilnService = createKilnService(
-            config.KILN_API_KEY
+            process.env.KILN_API_KEY
         );
 
         try {

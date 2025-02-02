@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { NetworkWallet } from '../services/kilnService';
-import { TruncatedAddress } from './TruncatedAddress';
 
 interface WalletManagerProps {
   networkId: string;

@@ -31,6 +31,24 @@ Run
 npm run dev
 ```
 
+Build
+```bash
+npm run build
+```
+## Configuration
+
+### Gemini API Key
+
+Deux options pour configurer la clé API Gemini :
+
+1. **Utilisation locale** :
+   - Copiez le fichier `.env.local.example` en `.env.local`
+   - Remplacez `your_gemini_api_key_here` par votre clé API Gemini (https://aistudio.google.com/) 
+
+2. **Pour le déploiement** :
+   - Ajoutez la clé API dans les GitHub Secrets
+   - Nom de la variable : `GEMINI_API_KEY`
+
 [Next.js]: https://img.shields.io/badge/Next.js-35495E?style=for-the-badge&logo=nextdotjs&logoColor=fff
 [Next-url]: https://nextjs.org/
 [Typescript]: https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=fff

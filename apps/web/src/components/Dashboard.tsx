@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import type { NetworkStats } from '@kiln-monorepo/shared';
-import { kilnService, NetworkInfo, NetworkWallet, NetworkWallets } from '../services/kilnService';
+import { kilnService, NetworkInfo, NetworkWallet } from '../services/kilnService';
 import { WalletManager } from './WalletManager';
 import { SidePanel } from './SidePanel';
 import { TruncatedAddress } from './TruncatedAddress';
@@ -273,9 +273,12 @@ export default function Dashboard() {
           })
         });
         const data = await response.json();
+
+        // Defensive programming to handle potential null/undefined values
+        const aiResponse = data?.candidates?.[0]?.content?.parts?.[0]?.text || "Sorry, I couldn't generate a proper response. Please try again.";
         
         setMessages(prev => [...prev, {
-          text: data.candidates[0].content.parts[0].text,
+          text: aiResponse,
           isUser: false
         }]);
       } catch (error) {
@@ -362,9 +365,9 @@ export default function Dashboard() {
 
   const handleButtonClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
-    e.stopPropagation();  // Empêche la propagation de l'événement
+    e.stopPropagation();  // Prevents event propagation
     const button = e.currentTarget;
-    button.blur();  // Retire le focus du bouton après le clic
+    button.blur();  // Removes focus from button after click
   };
 
   const filteredAndSortedNetworks = networks
@@ -406,7 +409,7 @@ export default function Dashboard() {
       const stats = await kilnService.getAllNetworksStats();
       setNetworksStats(stats);
     } catch (err) {
-      setError('Une erreur est survenue lors de la récupération des données');
+      setError('An error occurred while fetching data');
       console.error(err);
     } finally {
       setLoading(false);
@@ -569,7 +572,7 @@ Network: ${JSON.stringify(networksStats.get(networkId))}
             </div>
             {!isSpiko && (
               <div className="flex justify-between items-center">
-                <span className="text-gray-600 dark:text-gray-300">Prix</span>
+                <span className="text-gray-600 dark:text-gray-300">Price</span>
                 <span className="font-medium dark:text-white">
                   ${stats.price.toFixed(2)}
                 </span>
@@ -577,7 +580,7 @@ Network: ${JSON.stringify(networksStats.get(networkId))}
             )}
           </div>
         ) : (
-          <p className="text-gray-500">Données non disponibles</p>
+          <p className="text-gray-500">Data not available</p>
         )}
 
         {!selectedNetwork && !isSpiko && networkWallets.length > 0 && (
@@ -688,7 +691,7 @@ Network: ${JSON.stringify(networksStats.get(networkId))}
               <div className="relative flex-1">
                 <input
                   type="text"
-                  placeholder="Rechercher un réseau..."
+                  placeholder="Search for a network..."
                   className="w-full pl-10 pr-4 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-900 dark:text-gray-100 rounded-lg 
                             focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
                   value={searchTerm}
@@ -727,7 +730,7 @@ Network: ${JSON.stringify(networksStats.get(networkId))}
                       : 'bg-gray-50 text-gray-700 border border-gray-200 hover:bg-gray-100'}`}
                 >
                   <span className={`text-xl ${sortField === 'favorites' ? 'text-yellow-500' : 'text-gray-400'}`}>★</span>
-                  Favoris {sortField === 'favorites' && (sortOrder === 'asc' ? '↑' : '↓')}
+                  Favorites {sortField === 'favorites' && (sortOrder === 'asc' ? '↑' : '↓')}
                 </button>
 
                 {['name', 'price', 'apy'].map((field) => (
@@ -743,7 +746,7 @@ Network: ${JSON.stringify(networksStats.get(networkId))}
                         ? 'bg-blue-100 text-blue-800 border border-blue-200' 
                         : 'bg-gray-50 text-gray-700 border border-gray-200 hover:bg-gray-100'}`}
                   >
-                    {field === 'name' ? 'Nom' : field === 'price' ? 'Prix' : 'APY'}
+                    {field === 'name' ? 'Name' : field === 'price' ? 'Price' : 'APY'}
                     {sortField === field && (sortOrder === 'asc' ? ' ↑' : ' ↓')}
                   </button>
                 ))}
@@ -779,7 +782,7 @@ Network: ${JSON.stringify(networksStats.get(networkId))}
         </div>
 
         <div className="flex gap-8">
-          <div className="scrollable flex-1 overflow-y-auto p-4 space-y-4">
+          <div className="scrollable flex-1 overflow-y-auto space-y-4">
             {loading ? (
               <div className="flex justify-center items-center min-h-[400px]">
                 <div className="text-xl text-gray-600">Loading...</div>
@@ -856,14 +859,14 @@ Network: ${JSON.stringify(networksStats.get(networkId))}
         <SidePanel
           isOpen={!!selectedWallet}
           onClose={() => setSelectedWallet(null)}
-          title="Détails du wallet"
+          title="Wallet Details"
           className="w-[600px]"
         >
           <div className="p-6 space-y-6">
             <div className="space-y-2">
-              <h3 className="text-lg font-medium">Informations du wallet</h3>
+              <h3 className="text-lg font-medium">Wallet Information</h3>
               <div className="bg-gray-50 p-4 rounded-lg">
-                <p className="text-sm text-gray-600">Adresse :</p>
+                <p className="text-sm text-gray-600">Address:</p>
                 <TruncatedAddress address={selectedWallet.wallet.address} className="font-mono" />
               </div>
             </div>
@@ -885,7 +888,7 @@ Network: ${JSON.stringify(networksStats.get(networkId))}
                 <>
                   <div className="bg-blue-50 p-4 rounded-lg">
                     <div className="flex justify-between items-center">
-                      <span className="font-medium text-blue-900">Total des rewards accumulés</span>
+                      <span className="font-medium text-blue-900">Total accumulated rewards</span>
                       <span className="font-bold text-blue-700">
                         {(totalRewardsAccumulated / 1e18).toFixed(4)} ETH
                       </span>
@@ -937,14 +940,14 @@ Network: ${JSON.stringify(networksStats.get(networkId))}
                           <span className="font-medium text-green-600">{stake.gross_apy.toFixed(2)}%</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-sm text-gray-600">Rewards accumulés</span>
+                          <span className="text-sm text-gray-600">Accumulated rewards</span>
                           <span className="font-medium text-blue-600">
                             {(parseFloat(stake.rewards) / 1e18).toFixed(4)} ETH
                           </span>
                         </div>
                         {stake.rewards_to_withdraw && parseFloat(stake.rewards_to_withdraw) > 0 && (
                           <div className="flex justify-between">
-                            <span className="text-sm text-gray-600">Rewards à retirer</span>
+                            <span className="text-sm text-gray-600">Rewards to withdraw</span>
                             <span className="font-medium text-purple-600">
                               {(parseFloat(stake.rewards_to_withdraw) / 1e18).toFixed(4)} ETH
                             </span>
@@ -956,7 +959,7 @@ Network: ${JSON.stringify(networksStats.get(networkId))}
                     {totalRewardsToWithdraw > 0 && (
                       <div className="mt-4 bg-purple-50 p-4 rounded-lg">
                         <div className="flex justify-between items-center">
-                          <span className="font-medium text-purple-900">Total des rewards à retirer</span>
+                          <span className="font-medium text-purple-900">Total rewards to withdraw</span>
                           <span className="font-bold text-purple-700">
                             {(totalRewardsToWithdraw / 1e18).toFixed(4)} ETH
                           </span>
