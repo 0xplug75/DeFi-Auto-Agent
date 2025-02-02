@@ -11,7 +11,6 @@ Grâce à l’intégration de technologies avancées telles que l’intelligence
 [![Typescript][Typescript]][Typescript-url]   
 [![Tailwind][Tailwind]][Tailwind-url]   
 [![Gemini][Gemini]][Gemini-url]  
-[![Kiln][Kiln]][Kiln-url]   
 
 ## Lancer le projet
 Installation:
