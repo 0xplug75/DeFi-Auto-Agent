@@ -1,6 +1,6 @@
 import {
     StatsDataResponse,
-    StatsResponse
+    StatsResponse, TrendingAgentsOk
 } from "./types";
 import {elizaLogger} from "@elizaos/core";
 
@@ -23,6 +23,8 @@ const BASE_URLS = [
     "https://api.kiln.fi/v1/xtz/network-stats",
     "https://api.kiln.fi/v1/zeta/network-stats"
 ];
+
+const COOKIE_URL = "https://api.cookie.fun/v2/agents/agentsPaged?interval=_7Days&page=1&pageSize=5"
 
 export const createKilnService = (apiKey: string) => {
     const extractChain = (url: string): string => {
@@ -80,4 +82,32 @@ export const createKilnService = (apiKey: string) => {
     };
 
     return { getStakingStatistics };
+};
+
+export const createCookieService = (apiKey: string) => {
+    const getTradingAgents = async (): Promise<TrendingAgentsOk> => {
+        if (!apiKey) {
+            throw new Error("API key is required");
+        }
+
+        try {
+            const response = await fetch(COOKIE_URL, {
+                headers: {
+                    'x-api-key': `${apiKey}`
+                }
+            });
+
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error?.message || response.statusText);
+            }
+
+            return await response.json();
+        } catch (error: any) {
+            console.error("Cookie Service Error:", error.message);
+            throw error;
+        }
+    };
+
+    return { getTradingAgents };
 };

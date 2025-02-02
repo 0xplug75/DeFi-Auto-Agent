@@ -79,3 +79,36 @@ export const getVaultsExamples: ActionExample[][] = [
         }
     ],
 ]
+
+export const getTrendingAgentsExamples: ActionExample[][] = [
+    [
+        {
+            user: "{{user1}}",
+            content: {
+                text: "Who are the best AI Agent at the moment?",
+            },
+        },
+        {
+            user: "{{agent}}",
+            content: {
+                text: "",
+                action: "COOKIE_GET_TRENDING",
+            },
+        }
+    ],
+    [
+        {
+            user: "{{user1}}",
+            content: {
+                text: "On which twitter agent should I invest?",
+            },
+        },
+        {
+            user: "{{agent}}",
+            content: {
+                text: "",
+                action: "COOKIE_GET_TRENDING",
+            },
+        }
+    ]
+]
