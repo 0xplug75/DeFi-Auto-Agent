@@ -6,7 +6,7 @@ const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
   title: 'DeFI AI Agent',
-  description: 'Dashboard pour visualiser les données Kiln',
+  description: 'Dashboard to visualize Kiln data',
 };
 
 export default function RootLayout({

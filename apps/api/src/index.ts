@@ -1,6 +1,6 @@
 import dotenv from 'dotenv';
 
-// Charge les variables d'environnement avant tout
+// Load environment variables first
 dotenv.config();
 
 import express, { Express } from 'express';
@@ -12,7 +12,7 @@ const PORT = 3005;
 app.use(express.json());
 app.use('/api', kilnRoutes);
 
-// Ajoutons une route de test simple
+// Add a simple test route
 app.get('/api/test', (req, res) => {
   res.json({ message: 'API is working!' });
 });

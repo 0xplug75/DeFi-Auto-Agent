@@ -75,7 +75,7 @@ export const kilnController = {
         }
       );
 
-      // Log pour debug
+      // Debug log
       console.log('Rewards response:', response.data);
 
       res.json(response.data);

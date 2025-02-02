@@ -102,7 +102,7 @@ export const config = {
   api: {
     bodyParser: true,
     responseLimit: false,
-    // Augmenter le timeout à 2 minutes (120 secondes)
+    // Increase timeout to 2 minutes (120 seconds)
     timeout: 120000,
   },
 } 

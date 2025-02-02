@@ -375,7 +375,7 @@ export default function Dashboard() {
       network.name.toLowerCase().includes(searchTerm.toLowerCase())
     )
     .sort((a, b) => {
-      // Tri par favoris si c'est le champ sélectionné
+      // Sort by favorites if it's the selected field
       if (sortField === 'favorites') {
         const aFav = favorites.includes(a.id);
         const bFav = favorites.includes(b.id);
@@ -384,14 +384,14 @@ export default function Dashboard() {
         return 0;
       }
 
-      // Tri par nom
+      // Sort by name
       if (sortField === 'name') {
         return sortOrder === 'asc' 
           ? a.name.localeCompare(b.name)
           : b.name.localeCompare(a.name);
       }
       
-      // Tri par stats (price ou apy)
+      // Sort by stats (price or apy)
       const statsA = networksStats.get(a.id);
       const statsB = networksStats.get(b.id);
       if (!statsA || !statsB) return 0;

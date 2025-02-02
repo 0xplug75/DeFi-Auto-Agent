@@ -40,7 +40,7 @@ export function WalletManager({ networkId, wallets, onSave, onClose }: WalletMan
       {/* Liste des wallets existants */}
       {wallets.length > 0 && (
         <div className="space-y-4">
-          <h3 className="text-lg font-medium text-gray-900">Wallets existants</h3>
+          <h3 className="text-lg font-medium text-gray-900">Existing Wallets</h3>
           <div className="space-y-3">
             {wallets.map((wallet) => (
               <div key={wallet.address} className="bg-gray-50 p-4 rounded-lg">
@@ -53,7 +53,7 @@ export function WalletManager({ networkId, wallets, onSave, onClose }: WalletMan
                     className="text-sm text-red-600 hover:text-red-700 flex items-center gap-1"
                   >
                     <span className="text-lg">×</span>
-                    Supprimer
+                    Remove
                   </button>
                 </div>
 
@@ -89,7 +89,7 @@ export function WalletManager({ networkId, wallets, onSave, onClose }: WalletMan
 
       {/* Formulaire d'ajout */}
       <div className="bg-white space-y-4">
-        <h3 className="text-lg font-medium text-gray-900">Ajouter un wallet</h3>
+        <h3 className="text-lg font-medium text-gray-900">Add a wallet</h3>
         <div className="space-y-3">
           <label className="block text-sm font-medium text-gray-700">
             Label
@@ -121,7 +121,7 @@ export function WalletManager({ networkId, wallets, onSave, onClose }: WalletMan
               disabled={!newAddress.trim()}
               className="w-full bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Ajouter le wallet
+              Add wallet
             </button>
           </div>
         </div>
